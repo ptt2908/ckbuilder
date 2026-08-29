@@ -1,4 +1,8 @@
-# CKB Weekly Report — Week 1
+# CKB Weekly Report - Week 1
+
+**Reporting period:** 23 - 29 August 2026  
+**Publication date:** 29 August 2026  
+**Participant:** Pham Tan Thinh
 
 ## 1. Week 1 Overview
 
@@ -6,12 +10,12 @@ The goal of Week 1 was to set up the local development environment for CKB, beco
 
 The completed exercises for Week 1 are:
 
-- Exercise 1: Getting Started
-- Exercise 2: Transfer CKB
-- Exercise 3: Store Data on Cell
-- Exercise 4: Create Token
-- Exercise 5: Create DOB
-- Exercise 6: Simple Lock
+- Exercise 00: Getting Started
+- Exercise 01: Transfer CKB
+- Exercise 02: Store Data on Cell
+- Exercise 03: Create Token
+- Exercise 04: Create DOB
+- Exercise 05: Simple Lock
 
 ## 2. Development Environment
 
@@ -27,22 +31,14 @@ The completed exercises for Week 1 are:
 
 ## 3. Evidence
 
-| ID | Evidence | File |
+| ID | Exercise | Evidence |
 |---|---|---|
-| 01 | Workspace Setup | `00_setup/evidence/01_workspace_setup.png` |
-| 02 | OffCKB Installation / Verification | `00_setup/evidence/02_offckb_installation.png` |
-| 03 | CKB Devnet Running | `00_setup/evidence/03_ckb_devnet_running.png` |
-| 04 | Devnet Accounts | `00_setup/evidence/04_devnet_accounts.png` |
-| 05 | CLI Transfer Success | `01_transfer_ckb/evidence/01_cli_transfer_success.png` |
-| 06 | CLI Balance After Transfer | `01_transfer_ckb/evidence/02_cli_balance_after.png` |
-| 07 | Simple Transfer dApp Running | `01_transfer_ckb/evidence/03_simple_transfer_dapp_running.png` |
-| 08 | Simple Transfer dApp | `01_transfer_ckb/evidence/04_simple_transfer_dapp.png` |
-| 09 | dApp Transfer Success | `01_transfer_ckb/evidence/05_dapp_transfer_success.png` |
-| 10 | dApp Balance After Transfer | `01_transfer_ckb/evidence/06_dapp_balance_after.png` |
-| 11 | Deploy Hash Lock | `05_simple-lock/evidence/01_Deploy_Hash_Lock.png` |
-| 12 | Deployment Health Ready | `05_simple-lock/evidence/02-Deployment-Health-Ready.png` |
-| 13 | Deposit 300 CKB | `05_simple-lock/evidence/03-Deposit-300-CKB.png` |
-| 14 | Reveal and Transfer Committed | `05_simple-lock/evidence/04-Reveal-And-Transfer-Committed.png` |
+| 00 | Getting Started | [`00_setup/evidence/`](./00_setup/evidence/) |
+| 01 | Transfer CKB | [`01_transfer_ckb/evidence/`](./01_transfer_ckb/evidence/) |
+| 02 | Store Data on Cell | [`02_store_data_on_cell/evidence/`](./02_store_data_on_cell/evidence/) |
+| 03 | Create Token | [`03_create_token/evidence/`](./03_create_token/evidence/) |
+| 04 | Create DOB | [`04_create_dob/evidence/`](./04_create_dob/evidence/) |
+| 05 | Simple Lock | [`05_simple-lock/evidence/`](./05_simple-lock/evidence/) |
 
 All evidence screenshots are stored in their respective exercise directories.
 
@@ -80,7 +76,7 @@ Cell data stores application-specific information associated with a cell. It can
 
 RPC (Remote Procedure Call) provides an interface for applications and development tools to communicate with a CKB node, including querying blockchain state and submitting transactions.
 
-## 5. Exercise 1 — Transfer CKB
+## 5. Exercise 01 - Transfer CKB
 
 ### Objective
 
@@ -165,14 +161,9 @@ I also gained a basic understanding of the CKB Cell Model and how transactions c
 
 ### Evidence
 
-- `01_transfer_ckb/evidence/01_cli_transfer_success.png`
-- `01_transfer_ckb/evidence/02_cli_balance_after.png`
-- `01_transfer_ckb/evidence/03_simple_transfer_dapp_running.png`
-- `01_transfer_ckb/evidence/04_simple_transfer_dapp.png`
-- `01_transfer_ckb/evidence/05_dapp_transfer_success.png`
-- `01_transfer_ckb/evidence/06_dapp_balance_after.png`
+See the [Exercise 01 evidence folder](./01_transfer_ckb/evidence/).
 
-## 6. Exercise 6 — Simple Lock
+## 6. Exercise 05 - Simple Lock
 
 ### Objective
 
@@ -199,27 +190,32 @@ I gained practical experience compiling and deploying a custom script to the Dev
 
 ### Evidence
 
-- `05_simple-lock/evidence/01_Deploy_Hash_Lock.png`
-- `05_simple-lock/evidence/02-Deployment-Health-Ready.png`
-- `05_simple-lock/evidence/03-Deposit-300-CKB.png`
-- `05_simple-lock/evidence/04-Reveal-And-Transfer-Committed.png`
+See the [Exercise 05 evidence folder](./05_simple-lock/evidence/).
 
 ## 7. Week 1 Development Log
 
 | Date | Activity | Result | Evidence |
 |---|---|---|---|
-| Aug 27, 2026 | Workspace setup | Completed | `00_setup/evidence/01_workspace_setup.png` |
-| Aug 27, 2026 | OffCKB installation and verification | Completed | `00_setup/evidence/02_offckb_installation.png` |
-| Aug 27, 2026 | CKB Devnet startup | Completed | `00_setup/evidence/03_ckb_devnet_running.png` |
-| Aug 27, 2026 | Devnet account verification | Completed | `00_setup/evidence/04_devnet_accounts.png` |
-| Aug 27, 2026 | CLI CKB transfer | Completed | `01_transfer_ckb/evidence/01_cli_transfer_success.png`, `01_transfer_ckb/evidence/02_cli_balance_after.png` |
-| Aug 28, 2026 | Simple Transfer dApp setup and execution | Completed | `01_transfer_ckb/evidence/03_simple_transfer_dapp_running.png`, `01_transfer_ckb/evidence/04_simple_transfer_dapp.png`, `01_transfer_ckb/evidence/05_dapp_transfer_success.png` |
-| Aug 28, 2026 | Final balance verification | Completed | `01_transfer_ckb/evidence/06_dapp_balance_after.png` |
-| Aug 28, 2026 | Exercise 6: Simple Lock contract deployment and transfer | Completed | `05_simple-lock/evidence/01_Deploy_Hash_Lock.png`, `05_simple-lock/evidence/02-Deployment-Health-Ready.png`, `05_simple-lock/evidence/03-Deposit-300-CKB.png`, `05_simple-lock/evidence/04-Reveal-And-Transfer-Committed.png` |
+| Aug 27, 2026 | Workspace setup | Completed | [Exercise 00 evidence](./00_setup/evidence/) |
+| Aug 27, 2026 | OffCKB installation and verification | Completed | [Exercise 00 evidence](./00_setup/evidence/) |
+| Aug 27, 2026 | CKB Devnet startup | Completed | [Exercise 00 evidence](./00_setup/evidence/) |
+| Aug 27, 2026 | Devnet account verification | Completed | [Exercise 00 evidence](./00_setup/evidence/) |
+| Aug 27, 2026 | CLI CKB transfer | Completed | [Exercise 01 evidence](./01_transfer_ckb/evidence/) |
+| Aug 28, 2026 | Simple Transfer dApp setup and execution | Completed | [Exercise 01 evidence](./01_transfer_ckb/evidence/) |
+| Aug 28, 2026 | Final balance verification | Completed | [Exercise 01 evidence](./01_transfer_ckb/evidence/) |
+| Aug 28, 2026 | Exercise 05: Simple Lock contract deployment and transfer | Completed | [Exercise 05 evidence](./05_simple-lock/evidence/) |
 
-## 8. Remaining Week 1 Tasks
+## 8. Challenges
 
-All Week 1 beginner exercises (1 through 6) have been completed successfully.
+The main challenges during Week 1 were:
+
+- **Windows Development Environment:** Some CKB tooling used Unix-style executable paths. The `esbuild` build command initially failed on Windows and had to be adjusted to use the Windows executable.
+
+- **CKB Cell Model:** Understanding the difference between the traditional account/balance model and CKB's Cell Model required some adjustment. The Transfer CKB exercise helped connect the concept with actual transactions.
+
+- **CKB Script Workflow:** The Simple Lock exercise required understanding the workflow from building and deploying a script to depositing CKB and unlocking the cell with the correct preimage.
+
+All challenges were resolved, and the Week 1 exercises were completed successfully.
 
 ## 9. Final Reflection
 
@@ -227,4 +223,60 @@ Week 1 gave me a practical introduction to developing on Nervos CKB.
 
 I set up a local CKB development environment, started a Devnet, worked with development accounts, and completed CKB transfers through both the command line and a frontend dApp.
 
-By progressing through all six exercises, the practical work helped me connect basic CKB concepts with actual transaction workflows, understand the relationships between cells and transaction fees, and successfully build, deploy, and interact with a custom hash-lock smart contract. I am now prepared to dive deeper into CKB script development.
+By progressing through the six beginner exercises, the practical work helped me connect basic CKB concepts with actual transaction workflows, understand the relationships between cells and transaction fees, and successfully build, deploy, and interact with a custom hash-lock smart contract.
+
+I am now prepared to dive deeper into CKB application and script development.
+
+## 10. Week 2 Goals - Building Applications on CKB
+
+The main goal for Week 2 is to move from basic CKB usage to hands-on application development.
+
+I will focus on understanding how JavaScript / TypeScript applications interact with CKB through **CCC (Common Chain Connector)**, while also beginning to explore CKB Script development with Rust.
+
+### 10.1 Application Development with CCC
+
+I will use CCC as the main entry point for learning how to build CKB applications.
+
+My planned activities are:
+
+- Explore the CCC App and understand its main features.
+- Experiment with CKB transactions using the CCC Playground.
+- Read and run relevant CCC examples.
+- Learn the basic CCC API and its core concepts.
+- Build simple CKB application flows using JavaScript / TypeScript.
+- Understand how a frontend application connects to CKB and interacts with cells and transactions.
+
+### 10.2 Introduction to Rust and CKB Scripts
+
+After gaining more experience with application-level development, I will start learning how CKB Scripts are developed and executed.
+
+The initial focus will be:
+
+- Set up the Rust development environment for CKB.
+- Explore the CKB Rust SDK and related examples.
+- Learn the basic structure of a CKB Script.
+- Understand Script arguments and execution.
+- Build and test a simple Script.
+- Explore the use of CKB-CLI and CKB Debugger during development and testing.
+
+### 10.3 Supporting Tools
+
+I will also become familiar with developer tools that are useful when working with CKB:
+
+- CKB Testnet Faucet.
+- CKB Debugger.
+- CKB-CLI.
+- CKB Tools.
+
+These tools will be explored alongside the main development activities when they are needed.
+
+### 10.4 Expected Outcome
+
+By the end of Week 2, I aim to:
+
+1. Understand the basic workflow of building a CKB application with JavaScript / TypeScript.
+2. Be comfortable with the core concepts and APIs provided by CCC.
+3. Build and test simple CKB application flows.
+4. Understand the basic architecture and execution model of CKB Scripts.
+5. Have a working Rust environment for further CKB Script development.
+6. Be ready to move from beginner exercises toward building a small CKB-based project.
