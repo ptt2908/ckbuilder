@@ -7,7 +7,7 @@ function App() {
   // CCC wallet connection
   const { open, disconnect, wallet } = useCcc()
 
-  // Get the currently connected wallet signer
+  // Currently connected wallet signer
   const signer = useSigner()
 
   // Network / wallet information
@@ -19,9 +19,16 @@ function App() {
   const [receiver, setReceiver] = useState('')
   const [amount, setAmount] = useState('')
 
-  // Transaction status
+  // Transaction state
   const [txStatus, setTxStatus] = useState('')
   const [isBuilding, setIsBuilding] = useState(false)
+
+  const [txInfo, setTxInfo] = useState<{
+    inputs: number
+    outputs: number
+    receiver: string
+    amount: string
+  } | null>(null)
 
   // Detect CKB Testnet
   useEffect(() => {
@@ -34,7 +41,7 @@ function App() {
     )
   }, [])
 
-  // Load wallet address and balance after connecting
+  // Load wallet address and balance
   useEffect(() => {
     const loadWalletInfo = async () => {
       if (!signer) {
@@ -65,10 +72,8 @@ function App() {
 
   // Build a CKB transfer transaction
   const handleBuildTransaction = async () => {
-    if (!signer) {
-      setTxStatus('Please connect a wallet first.')
-      return
-    }
+    setTxStatus('')
+    setTxInfo(null)
 
     if (!receiver.trim()) {
       setTxStatus('Please enter a receiver address.')
@@ -82,15 +87,16 @@ function App() {
 
     try {
       setIsBuilding(true)
-      setTxStatus('Building transaction...')
 
       // Convert receiver address into a CKB lock script
+      const client = new ccc.ClientPublicTestnet()
+
       const { script: lock } = await ccc.Address.fromString(
         receiver.trim(),
-        signer.client,
+        client,
       )
 
-      // Create a transaction with one CKB output
+      // Create the transaction output
       const tx = ccc.Transaction.from({
         outputs: [
           {
@@ -100,19 +106,30 @@ function App() {
         ],
       })
 
-      // Automatically select input cells
-      await tx.completeInputsByCapacity(signer)
+      // If a wallet signer is connected,
+      // complete inputs and transaction fee.
+      if (signer) {
+        await tx.completeInputsByCapacity(signer)
+        await tx.completeFeeBy(signer)
 
-      // Calculate and add the transaction fee
-      await tx.completeFeeBy(signer)
+        setTxStatus(
+          'Transaction completed successfully.',
+        )
+      } else {
+        setTxStatus(
+          'Transaction skeleton created. Connect a wallet to complete inputs and fee.',
+        )
+      }
 
-      setTxStatus(
-        `Transaction completed successfully. ` +
-        `Inputs: ${tx.inputs.length}, ` +
-        `Outputs: ${tx.outputs.length}.`,
-      )
+      // Store information for the preview
+      setTxInfo({
+        inputs: tx.inputs.length,
+        outputs: tx.outputs.length,
+        receiver: receiver.trim(),
+        amount: amount.trim(),
+      })
 
-      console.log('Completed transaction:', tx)
+      console.log('Transaction:', tx)
     } catch (error) {
       console.error(
         'Failed to build transaction:',
@@ -182,7 +199,7 @@ function App() {
             setReceiver(event.target.value)
           }
           placeholder="ckt1..."
-          disabled={!signer || isBuilding}
+          disabled={isBuilding}
         />
 
         <p>
@@ -198,7 +215,7 @@ function App() {
             setAmount(event.target.value)
           }
           placeholder="100"
-          disabled={!signer || isBuilding}
+          disabled={isBuilding}
         />
 
         <br />
@@ -206,7 +223,7 @@ function App() {
 
         <button
           onClick={handleBuildTransaction}
-          disabled={!signer || isBuilding}
+          disabled={isBuilding}
         >
           {isBuilding
             ? 'Building...'
@@ -221,6 +238,33 @@ function App() {
           </p>
         )}
       </section>
+
+      {txInfo && (
+        <section>
+          <h2>Transaction Preview</h2>
+
+          <p>
+            <strong>Inputs:</strong>{' '}
+            {txInfo.inputs}
+          </p>
+
+          <p>
+            <strong>Outputs:</strong>{' '}
+            {txInfo.outputs}
+          </p>
+
+          <p>
+            <strong>Receiver:</strong>
+            <br />
+            <code>{txInfo.receiver}</code>
+          </p>
+
+          <p>
+            <strong>Amount:</strong>{' '}
+            {txInfo.amount} CKB
+          </p>
+        </section>
+      )}
     </main>
   )
 }
