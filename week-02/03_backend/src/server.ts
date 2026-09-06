@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import { ckbClient } from "./ckb.js";
 
 function serializeBigInt(value: unknown): unknown {
@@ -25,6 +26,7 @@ function serializeBigInt(value: unknown): unknown {
 const app = express();
 const PORT = 3000;
 
+app.use(cors());
 app.use(express.json());
 
 app.get("/api/health", (_req, res) => {
@@ -66,10 +68,6 @@ app.get("/api/ckb/tip", async (_req, res) => {
       error: "Failed to query CKB tip",
     });
   }
-});
-
-app.listen(PORT, () => {
-  console.log(`Backend server running at http://localhost:${PORT}`);
 });
 
 app.get("/api/ckb/transactions/:txHash", async (req, res) => {
@@ -128,4 +126,8 @@ app.get("/api/ckb/transactions/:txHash/status", async (req, res) => {
       error: "Failed to query transaction status",
     });
   }
+});
+
+app.listen(PORT, () => {
+  console.log(`Backend server running at http://localhost:${PORT}`);
 });

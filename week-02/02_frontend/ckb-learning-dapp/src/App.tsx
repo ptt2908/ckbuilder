@@ -1,4 +1,9 @@
 import { useEffect, useState } from 'react'
+import {
+  getCkbNetwork,
+  getTransactionStatus,
+  type CkbTransactionStatus,
+} from './backendApi'
 import { ccc } from '@ckb-ccc/ccc'
 import { useCcc, useSigner } from '@ckb-ccc/connector-react'
 import './App.css'
@@ -14,6 +19,16 @@ function App() {
   const [network, setNetwork] = useState('Loading...')
   const [address, setAddress] = useState('Not connected')
   const [balance, setBalance] = useState('--')
+
+  const [backendNetwork, setBackendNetwork] = useState('Loading...')
+  const [backendTip, setBackendTip] = useState('--')
+  const [backendStatus, setBackendStatus] = useState('')
+  const [isCheckingBackend, setIsCheckingBackend] = useState(false)
+  const [trackingTxHash, setTrackingTxHash] = useState('')
+  const [trackingStatus, setTrackingStatus] =
+  useState<CkbTransactionStatus | null>(null)
+  const [trackingError, setTrackingError] = useState('')
+  const [isTracking, setIsTracking] = useState(false)
 
   // Transfer form
   const [receiver, setReceiver] = useState('')
@@ -319,6 +334,57 @@ function App() {
     }
   }
 
+  const handleCheckBackend = async () => {
+    setBackendStatus('')
+    setIsCheckingBackend(true)
+
+    try {
+      const result = await getCkbNetwork()
+
+      setBackendNetwork(result.network)
+      setBackendTip(result.tip)
+      setBackendStatus('Backend connection successful.')
+    } catch (error) {
+      console.error('Failed to connect to backend:', error)
+
+      setBackendStatus(
+        `Failed to connect to backend: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      )
+    } finally {
+      setIsCheckingBackend(false)
+    }
+  }
+
+  const handleTrackTransaction = async () => {
+    setTrackingError('')
+    setTrackingStatus(null)
+
+    if (!trackingTxHash.trim()) {
+      setTrackingError('Please enter a transaction hash.')
+      return
+    }
+
+    try {
+      setIsTracking(true)
+
+      const result = await getTransactionStatus(trackingTxHash.trim())
+
+      setTrackingStatus(result)
+    } catch (error) {
+      console.error('Failed to track transaction:', error)
+
+      setTrackingError(
+        error instanceof Error
+          ? error.message
+          : String(error),
+      )
+    } finally {
+      setIsTracking(false)
+    }
+  }
+
   return (
     <main>
       <h1>CKB Learning dApp</h1>
@@ -355,7 +421,82 @@ function App() {
           </button>
         )}
       </section>
+        <section>
+        <h2>CKB Backend</h2>
 
+        <button
+          onClick={handleCheckBackend}
+          disabled={isCheckingBackend}
+        >
+          {isCheckingBackend ? 'Checking Backend...' : 'Check Backend'}
+        </button>
+
+        <div>
+          <p>
+            <strong>Backend Network:</strong> {backendNetwork}
+          </p>
+
+          <p>
+            <strong>Backend Tip:</strong> {backendTip}
+          </p>
+        </div>
+
+        {backendStatus && (
+          <p>
+            {backendStatus}
+          </p>
+        )}
+    <section>
+  <h2>Transaction Tracking</h2>
+
+  <p>
+    <strong>Transaction Hash</strong>
+  </p>
+
+  <input
+    type="text"
+    value={trackingTxHash}
+    onChange={(event) => setTrackingTxHash(event.target.value)}
+    placeholder="0x..."
+    disabled={isTracking}
+    style={{ width: '100%' }}
+  />
+
+  <br />
+  <br />
+
+  <button
+    onClick={handleTrackTransaction}
+    disabled={isTracking}
+  >
+    {isTracking ? 'Checking Transaction...' : 'Check Transaction Status'}
+  </button>
+
+  {trackingStatus && (
+    <div>
+      <p>
+        <strong>Status:</strong> {trackingStatus.status}
+      </p>
+
+      <p>
+        <strong>Block Number:</strong>{' '}
+        {trackingStatus.blockNumber ?? 'N/A'}
+      </p>
+
+      <p>
+        <strong>Transaction Index:</strong>{' '}
+        {trackingStatus.txIndex ?? 'N/A'}
+      </p>
+    </div>
+  )}
+
+  {trackingError && (
+    <p>
+      <strong>Error:</strong> {trackingError}
+    </p>
+  )}
+</section>
+    </section>
       <section>
         <h2>Query Testnet Balance</h2>
 
