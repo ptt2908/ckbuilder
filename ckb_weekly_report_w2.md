@@ -11,8 +11,8 @@ During Week 2, I moved from the basic CKB exercises completed in Week 1 to build
 
 ### Project Links
 
-- **Frontend:** [`week-02/02_frontend/ckb-learning-dapp`](./02_frontend/ckb-learning-dapp/)
-- **Backend:** [`week-02/03_backend`](./03_backend/)
+- **Frontend:** [`week-02/02_frontend/ckb-learning-dapp`](https://github.com/ptt2908/ckbuilder/tree/main/week-02/02_frontend/ckb-learning-dapp)
+- **Backend:** [`week-02/03_backend`](https://github.com/ptt2908/ckbuilder/tree/main/week-02/03_backend)
 
 The main focus was to understand how CCC can be used to work with CKB Cells, addresses, signers, transactions, UDT tokens, Spore/DOBs, and Node.js backends. I also started connecting these concepts into a small React frontend and Node.js backend application.
 
