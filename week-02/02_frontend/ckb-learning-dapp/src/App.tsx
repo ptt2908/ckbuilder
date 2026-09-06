@@ -255,6 +255,70 @@ function App() {
     }
   }
 
+  // Query Transactions state
+  interface TxItem {
+    txHash: string
+    blockNumber: string
+  }
+  const [transactions, setTransactions] = useState<TxItem[]>([])
+  const [totalTxCount, setTotalTxCount] = useState<number | null>(null)
+  const [txQueryStatus, setTxQueryStatus] = useState('')
+  const [isQueryingTx, setIsQueryingTx] = useState(false)
+
+  // Query transaction history directly using CCC ClientPublicTestnet
+  const handleQueryTransactions = async () => {
+    setTxQueryStatus('')
+    setTransactions([])
+    setTotalTxCount(null)
+
+    if (!queryAddress.trim()) {
+      setTxQueryStatus('Please enter a CKB Testnet address.')
+      return
+    }
+
+    try {
+      setIsQueryingTx(true)
+      const client = new ccc.ClientPublicTestnet()
+      const { script: lock } = await ccc.Address.fromString(
+        queryAddress.trim(),
+        client,
+      )
+
+      const fetchedTxs: TxItem[] = []
+      let count = 0
+
+      for await (const txRecord of client.findTransactionsByLock(
+        lock,
+        null,
+        true,
+      )) {
+        count++
+        if (fetchedTxs.length < 10) {
+          fetchedTxs.push({
+            txHash: txRecord.txHash,
+            blockNumber: txRecord.blockNumber.toString(),
+          })
+        }
+      }
+
+      setTotalTxCount(count)
+      setTransactions(fetchedTxs)
+
+      if (count === 0) {
+        setTxQueryStatus('No transactions found for this address.')
+      }
+    } catch (error) {
+      console.error('Failed to query transactions:', error)
+      setTxQueryStatus(
+        `Failed to query transactions: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      )
+    } finally {
+      setIsQueryingTx(false)
+    }
+  }
+
   return (
     <main>
       <h1>CKB Learning dApp</h1>
@@ -394,6 +458,61 @@ function App() {
             <strong>Status:</strong>
             <br />
             {cellsStatus}
+          </p>
+        )}
+      </section>
+
+      <section>
+        <h2>Query Transactions</h2>
+
+        <button
+          onClick={handleQueryTransactions}
+          disabled={isQueryingTx}
+        >
+          {isQueryingTx ? 'Querying Transactions...' : 'Query Transactions'}
+        </button>
+
+        {totalTxCount !== null && (
+          <p>
+            <strong>Total Transactions Found:</strong> {totalTxCount}
+            {totalTxCount > 10 && ' (showing first 10)'}
+          </p>
+        )}
+
+        {transactions.length > 0 && (
+          <div style={{ overflowX: 'auto', marginTop: '1rem' }}>
+            <table
+              style={{
+                width: '100%',
+                borderCollapse: 'collapse',
+                textAlign: 'left',
+              }}
+            >
+              <thead>
+                <tr style={{ borderBottom: '1px solid #ccc' }}>
+                  <th style={{ padding: '6px 8px' }}>Transaction Hash</th>
+                  <th style={{ padding: '6px 8px' }}>Block Number</th>
+                </tr>
+              </thead>
+              <tbody>
+                {transactions.map((tx, index) => (
+                  <tr key={index} style={{ borderBottom: '1px solid #eee' }}>
+                    <td style={{ padding: '6px 8px' }}>
+                      <code>{tx.txHash}</code>
+                    </td>
+                    <td style={{ padding: '6px 8px' }}>{tx.blockNumber}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {txQueryStatus && (
+          <p>
+            <strong>Status:</strong>
+            <br />
+            {txQueryStatus}
           </p>
         )}
       </section>
