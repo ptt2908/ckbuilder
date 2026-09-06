@@ -148,6 +148,46 @@ function App() {
     }
   }
 
+  // Query Testnet Balance state
+  const [queryAddress, setQueryAddress] = useState(
+    'ckt1qzda0cr08m85hc8jlnfp3zer7xulejywt49kt2rr0vthywaa50xwsqvwg2cen8extgq8s5puft8vf40px3f599cytcyd8',
+  )
+  const [queriedBalance, setQueriedBalance] = useState<string | null>(null)
+  const [queryStatus, setQueryStatus] = useState('')
+  const [isQuerying, setIsQuerying] = useState(false)
+
+  // Query balance directly using CCC ClientPublicTestnet (no wallet required)
+  const handleQueryBalance = async () => {
+    setQueryStatus('')
+    setQueriedBalance(null)
+
+    if (!queryAddress.trim()) {
+      setQueryStatus('Please enter a CKB Testnet address.')
+      return
+    }
+
+    try {
+      setIsQuerying(true)
+      const client = new ccc.ClientPublicTestnet()
+      const { script: lock } = await ccc.Address.fromString(
+        queryAddress.trim(),
+        client,
+      )
+
+      const balanceValue = await client.getBalance([lock])
+      setQueriedBalance(ccc.fixedPointToString(balanceValue))
+    } catch (error) {
+      console.error('Failed to query balance:', error)
+      setQueryStatus(
+        `Failed to query balance: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      )
+    } finally {
+      setIsQuerying(false)
+    }
+  }
+
   return (
     <main>
       <h1>CKB Learning dApp</h1>
@@ -182,6 +222,51 @@ function App() {
           <button onClick={disconnect}>
             Disconnect
           </button>
+        )}
+      </section>
+
+      <section>
+        <h2>Query Testnet Balance</h2>
+
+        <p>
+          <strong>CKB Testnet Address</strong>
+        </p>
+
+        <input
+          type="text"
+          value={queryAddress}
+          onChange={(event) =>
+            setQueryAddress(event.target.value)
+          }
+          placeholder="ckt1..."
+          disabled={isQuerying}
+          style={{ width: '100%' }}
+        />
+
+        <br />
+        <br />
+
+        <button
+          onClick={handleQueryBalance}
+          disabled={isQuerying}
+        >
+          {isQuerying ? 'Querying...' : 'Query Balance'}
+        </button>
+
+        {queriedBalance !== null && (
+          <p>
+            <strong>Balance:</strong>
+            <br />
+            <strong>{queriedBalance} CKB</strong>
+          </p>
+        )}
+
+        {queryStatus && (
+          <p>
+            <strong>Status:</strong>
+            <br />
+            {queryStatus}
+          </p>
         )}
       </section>
 
