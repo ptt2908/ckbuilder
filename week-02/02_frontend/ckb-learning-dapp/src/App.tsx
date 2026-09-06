@@ -188,6 +188,73 @@ function App() {
     }
   }
 
+  // Query Cells state
+  interface CellItem {
+    id: string
+    capacity: string
+    hasTypeScript: boolean
+    dataLength: number
+  }
+  const [cells, setCells] = useState<CellItem[]>([])
+  const [totalCellsCount, setTotalCellsCount] = useState<number | null>(null)
+  const [cellsStatus, setCellsStatus] = useState('')
+  const [isQueryingCells, setIsQueryingCells] = useState(false)
+
+  // Query live cells directly using CCC ClientPublicTestnet
+  const handleQueryCells = async () => {
+    setCellsStatus('')
+    setCells([])
+    setTotalCellsCount(null)
+
+    if (!queryAddress.trim()) {
+      setCellsStatus('Please enter a CKB Testnet address.')
+      return
+    }
+
+    try {
+      setIsQueryingCells(true)
+      const client = new ccc.ClientPublicTestnet()
+      const { script: lock } = await ccc.Address.fromString(
+        queryAddress.trim(),
+        client,
+      )
+
+      const fetchedCells: CellItem[] = []
+      let count = 0
+
+      for await (const cell of client.findCellsByLock(lock)) {
+        count++
+        if (fetchedCells.length < 10) {
+          const rawDataLen = cell.outputData ? cell.outputData.length : 2
+          const byteLen = Math.max(0, Math.floor((rawDataLen - 2) / 2))
+
+          fetchedCells.push({
+            id: `${cell.outPoint.txHash.slice(0, 10)}...${cell.outPoint.txHash.slice(-6)}:${cell.outPoint.index}`,
+            capacity: ccc.fixedPointToString(cell.cellOutput.capacity),
+            hasTypeScript: Boolean(cell.cellOutput.type),
+            dataLength: byteLen,
+          })
+        }
+      }
+
+      setTotalCellsCount(count)
+      setCells(fetchedCells)
+
+      if (count === 0) {
+        setCellsStatus('No live cells found for this address.')
+      }
+    } catch (error) {
+      console.error('Failed to query cells:', error)
+      setCellsStatus(
+        `Failed to query cells: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      )
+    } finally {
+      setIsQueryingCells(false)
+    }
+  }
+
   return (
     <main>
       <h1>CKB Learning dApp</h1>
@@ -266,6 +333,67 @@ function App() {
             <strong>Status:</strong>
             <br />
             {queryStatus}
+          </p>
+        )}
+      </section>
+
+      <section>
+        <h2>Query Cells</h2>
+
+        <button
+          onClick={handleQueryCells}
+          disabled={isQueryingCells}
+        >
+          {isQueryingCells ? 'Querying Cells...' : 'Query Cells'}
+        </button>
+
+        {totalCellsCount !== null && (
+          <p>
+            <strong>Total Cells Found:</strong> {totalCellsCount}
+            {totalCellsCount > 10 && ' (showing first 10)'}
+          </p>
+        )}
+
+        {cells.length > 0 && (
+          <div style={{ overflowX: 'auto', marginTop: '1rem' }}>
+            <table
+              style={{
+                width: '100%',
+                borderCollapse: 'collapse',
+                textAlign: 'left',
+              }}
+            >
+              <thead>
+                <tr style={{ borderBottom: '1px solid #ccc' }}>
+                  <th style={{ padding: '6px 8px' }}>OutPoint</th>
+                  <th style={{ padding: '6px 8px' }}>Capacity (CKB)</th>
+                  <th style={{ padding: '6px 8px' }}>Type Script</th>
+                  <th style={{ padding: '6px 8px' }}>Data Length</th>
+                </tr>
+              </thead>
+              <tbody>
+                {cells.map((cell, index) => (
+                  <tr key={index} style={{ borderBottom: '1px solid #eee' }}>
+                    <td style={{ padding: '6px 8px' }}>
+                      <code>{cell.id}</code>
+                    </td>
+                    <td style={{ padding: '6px 8px' }}>{cell.capacity}</td>
+                    <td style={{ padding: '6px 8px' }}>
+                      {cell.hasTypeScript ? 'Yes' : 'No'}
+                    </td>
+                    <td style={{ padding: '6px 8px' }}>{cell.dataLength} bytes</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {cellsStatus && (
+          <p>
+            <strong>Status:</strong>
+            <br />
+            {cellsStatus}
           </p>
         )}
       </section>
