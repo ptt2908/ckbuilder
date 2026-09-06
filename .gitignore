@@ -1,2 +1,6 @@
 account0.key
 docs.nervos.org/
+
+node_modules/
+.env
+.env.*
