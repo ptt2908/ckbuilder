@@ -2,6 +2,11 @@
 
 ## 1. Overview
 
+**Program:** CKBuilder  
+**Week:** Week 3  
+**Reporting Period:** 6 September - 12 September 2026  
+**Participant:** Pham Tan Thinh
+
 Week 3 focused on understanding **payment channels on CKB**, with hands-on exploration of two major approaches:
 
 - **Fiber Network** — a payment-channel network designed for fast, low-cost off-chain payments on CKB.
