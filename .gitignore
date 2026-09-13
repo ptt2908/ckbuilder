@@ -5,3 +5,17 @@ docs.nervos.org/
 node_modules/
 .env
 .env.*
+# Fiber node data, binaries, and archives
+week-03/node*
+week-03/**/ckb/key*
+week-03/**/fiber/sk*
+week-03/fnn.exe
+week-03/fnn-cli.exe
+week-03/*.tar.gz
+*.tar.gz
+
+# Perun build artifacts and git repository
+week-03/perun-ckb-contract/target/
+week-03/perun-ckb-contract/build/
+week-03/perun-ckb-contract/.git/
+
