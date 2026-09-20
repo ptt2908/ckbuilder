@@ -311,32 +311,17 @@ Through this week's implementation, I learned how to:
 
 ## 8. Evidence
 
-The following screenshots were captured during the Week 4
-implementation:
+The following screenshots were captured during the Week 4 implementation:
 
-  -----------------------------------------------------------------------
-  Evidence                            Description
-  ----------------------------------- -----------------------------------
-  `01-wallet-dashboard.png`           JoyID wallet connection and CKB
-                                      balance
-
-  `02-xudt-dashboard.png`             xUDT type arguments, balance, and
-                                      mint result
-
-  `03-spore-dashboard.png`            Spore creation and queried Spore
-                                      asset
-
-  `04-xudt-transfer.png`              xUDT transfer result
-
-  `05-ckb-transfer.png`               CKB transfer result
-
-  `06-sign-verify.png`                JoyID message signing and valid
-                                      signature verification
-
-  `07-transaction-query.png`          Transaction query showing
-                                      `committed` status and block
-                                      `22482472`
-  -----------------------------------------------------------------------
+| Evidence | Description |
+|---|---|
+| `01-wallet-dashboard.png` | JoyID wallet connection and CKB balance |
+| `02-xudt-dashboard.png` | xUDT type arguments, balance, and mint result |
+| `03-spore-dashboard.png` | Spore creation and queried Spore asset |
+| `04-xudt-transfer.png` | xUDT transfer result |
+| `05-ckb-transfer.png` | CKB transfer result |
+| `06-sign-verify.png` | JoyID message signing and valid signature verification |
+| `07-transaction-query.png` | Transaction query showing `committed` status and block `22482472` |
 
 All evidence files are stored under:
 
