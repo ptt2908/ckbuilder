@@ -5,6 +5,7 @@ docs.nervos.org/
 node_modules/
 .env
 .env.*
+!.env.example
 # Fiber node data, binaries, and archives
 week-03/node*
 week-03/**/ckb/key*

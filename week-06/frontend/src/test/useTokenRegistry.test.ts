@@ -1,6 +1,11 @@
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { CKB_DEFAULT_NETWORK_ID, getNetworkLabel } from "../config/network";
+import {
+  CKB_DEFAULT_NETWORK_ID,
+  getExplorerTxUrl,
+  getNetworkLabel,
+  normalizeExplorerBaseUrl,
+} from "../config/network";
 import { REGISTRY_STORAGE_KEY } from "../config/storageKeys";
 import { useTokenRegistry } from "../hooks/useTokenRegistry";
 import type { TokenRegistryItem } from "../types/token";
@@ -345,10 +350,23 @@ describe("useTokenRegistry", () => {
     ).toBeUndefined();
   });
 
-  it("formats network labels with CKB Testnet default and safe fallback", () => {
+  it("formats network labels and Explorer URLs with CKB Testnet defaults and safe normalization", () => {
     expect(getNetworkLabel("ckb_testnet")).toBe("CKB Testnet");
     expect(getNetworkLabel("   ")).toBe("CKB Testnet");
     expect(getNetworkLabel("ckb_mainnet")).toBe("CKB Mainnet");
     expect(getNetworkLabel("ckb_custom_devnet")).toBe("ckb_custom_devnet");
+
+    expect(normalizeExplorerBaseUrl("  https://v1.testnet.explorer.nervos.org/// ")).toBe(
+      "https://v1.testnet.explorer.nervos.org",
+    );
+    expect(normalizeExplorerBaseUrl("   ")).toBe(
+      "https://v1.testnet.explorer.nervos.org",
+    );
+    expect(
+      getExplorerTxUrl(
+        `  ${TYPE_ARGS_A}  `,
+        "https://custom.explorer.example.org///",
+      ),
+    ).toBe(`https://custom.explorer.example.org/transaction/${TYPE_ARGS_A}`);
   });
 });

@@ -1,75 +1,70 @@
-# React + TypeScript + Vite
+# CKB Studio — xUDT Token Manager
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A React + TypeScript + Vite web application for managing CKB xUDT tokens on **CKB Testnet** with JoyID passkey wallet integration, a persistent network-aware Multi-token Registry, token minting/transferring, and on-chain transaction lookup.
 
-Currently, two official plugins are available:
+## Prerequisites
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Node.js**: `^20.19.0 || >=22.12.0` (Node 22 LTS recommended)
+- **npm**: v10+
 
-## React Compiler
+## Installation
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+From `week-06/frontend`:
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```bash
+npm ci
 ```
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+*(or `npm install` when updating dependencies locally).*
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Development, Testing & Verification
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+Run the following scripts from `week-06/frontend`:
 
+```bash
+# Start local Vite dev server
+npm run dev
+
+# Run deterministic unit, hook, and UI tests (Vitest + React Testing Library)
+npm test
+
+# Run ESLint checks
+npm run lint
+
+# Run TypeScript project-reference typecheck
+npx tsc -b
+
+# Build production bundle into dist/
+npm run build
+
+# Preview production build locally
+npm run preview
 ```
+
+## Environment Configuration (Optional)
+
+The application defaults to **CKB Testnet** out of the box without requiring any environment file. To customize public network endpoints, copy `.env.example` to `.env.local`:
+
+```bash
+cp .env.example .env.local
+```
+
+Supported public variables:
+
+| Variable | Default | Description |
+|---|---|---|
+| `VITE_CKB_NETWORK_NAME` | `CKB Testnet` | Display label for the active CKB network |
+| `VITE_CKB_NETWORK_ID` | `ckb_testnet` | Default network identifier for the Multi-token Registry |
+| `VITE_CKB_EXPLORER_URL` | `https://v1.testnet.explorer.nervos.org` | Base URL for CKB Explorer transaction links |
+| `VITE_CKB_RPC_URL` | *(CCC default Testnet RPC)* | Optional custom public CKB Testnet JSON-RPC endpoint passed to `ccc.Provider` |
+
+> **Security Warning**: All `VITE_*` variables are statically embedded into the client-side browser bundle at build time. **Never** place private keys, seed phrases, wallet credentials, or secret API tokens in `VITE_*` variables or commit `.env` / `.env.local` files.
+
+## Static Hosting & Deployment
+
+1. Build the static production bundle from `week-06/frontend`:
+   ```bash
+   npm run build
+   ```
+2. Deploy the generated `week-06/frontend/dist` directory to any static hosting provider (Vercel, Netlify, Cloudflare Pages, etc.).
+3. Configure **SPA fallback** (`/* -> /index.html`, HTTP 200) on the host so direct navigation resolves to `index.html`.
