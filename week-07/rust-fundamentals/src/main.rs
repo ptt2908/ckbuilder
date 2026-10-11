@@ -8,6 +8,7 @@
 //! 5. Heap-allocated `Vec<T>`, `String`, slices (`&[T]`, `&str`), and iterator pipelines.
 //! 6. Type-safe error handling with `Result<T, E>` and `Option<T>`.
 
+pub mod analyzer;
 pub mod ownership;
 pub mod types_errors;
 
@@ -223,7 +224,7 @@ fn main() {
         types_errors::RawPacket {
             channel_id: 2,
             seq: 2,
-            raw_millivolts: 3100,
+            raw_millivolts: 3000,
             status_flags: 0,
         },
     ];
@@ -234,6 +235,25 @@ fn main() {
             });
         println!(
             "Packet decoder demo: ch=2 emergency_deci_c={emergency_deci_c} severity={severity}"
+        );
+    }
+
+    if let Ok(analysis) = analyzer::analyze_calibrated_batch(
+        "MCU-01",
+        "MCU-01-STATOR-WINDING",
+        -15,
+        &mcu_temps_deci_c,
+    ) {
+        println!(
+            "Analyzer report: {}",
+            analyzer::format_analysis_report(&analysis)
+        );
+    }
+
+    if let Ok(bus_analysis) = analyzer::analyze_active_packet_frame("SENS-BUS-MAIN", &frame) {
+        println!(
+            "Packet-bus analysis: {}",
+            analyzer::format_analysis_report(&bus_analysis)
         );
     }
 }
