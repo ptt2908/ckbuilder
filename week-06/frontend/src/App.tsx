@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import "./App.css";
 
 import { Header } from "./components/Header";
@@ -91,20 +91,24 @@ function App() {
   const [queryTxBlock, setQueryTxBlock] = useState("");
   const [isQueryingTx, setIsQueryingTx] = useState(false);
 
-  // Sync token recipient default
-  useEffect(() => {
+  // Sync token recipient default and clear transaction state on disconnect
+  const [prevSigner, setPrevSigner] = useState(signer);
+  if (prevSigner !== signer) {
+    setPrevSigner(signer);
     if (!signer) {
       setXudtTxHash("");
       setXudtMintRecipient("");
       setXudtMintTxHash("");
     }
-  }, [signer]);
+  }
 
-  useEffect(() => {
+  const [prevAddress, setPrevAddress] = useState(address);
+  if (prevAddress !== address) {
+    setPrevAddress(address);
     if (address) {
       setXudtMintRecipient((prev) => prev || address);
     }
-  }, [address]);
+  }
 
   // Transfer Handler
   const transferXudt = async () => {
