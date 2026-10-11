@@ -9,6 +9,7 @@
 //! 6. Type-safe error handling with `Result<T, E>` and `Option<T>`.
 
 pub mod ownership;
+pub mod types_errors;
 
 /// Hardware ADC sentinel indicating an open-circuit / disconnected thermistor.
 pub const SENSOR_DISCONNECTED_RAW: i16 = i16::MIN;
@@ -211,6 +212,30 @@ fn main() {
         "Ownership demo: label={chosen_label} ch={ch} valid_tag={} cal_deci_c={latest_cal} window={slice_stats:?}",
         label_info.is_valid_ascii_tag,
     );
+
+    let frame = [
+        types_errors::RawPacket {
+            channel_id: 1,
+            seq: 1,
+            raw_millivolts: 1500,
+            status_flags: 0,
+        },
+        types_errors::RawPacket {
+            channel_id: 2,
+            seq: 2,
+            raw_millivolts: 3100,
+            status_flags: 0,
+        },
+    ];
+    if let Ok(Some(emergency_deci_c)) = types_errors::query_channel_emergency_temp(&frame, 2) {
+        let severity =
+            types_errors::mode_severity_level(types_errors::OperationalMode::EmergencyShutdown {
+                temp_deci_c: emergency_deci_c,
+            });
+        println!(
+            "Packet decoder demo: ch=2 emergency_deci_c={emergency_deci_c} severity={severity}"
+        );
+    }
 }
 
 #[cfg(test)]
