@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { getNetworkLabel } from "../config/network";
 import type { TokenRegistryItem } from "../types/token";
 import { isValidTypeArgs, normalizeHexArgs } from "../utils/hex";
 
@@ -225,6 +226,9 @@ export const TokenRegistryCard: React.FC<TokenRegistryCardProps> = ({
                   <div className="registry-item-body">
                     <span className="type-args-code" title={token.typeArgs}>
                       {shortenHex(token.typeArgs)}
+                    </span>
+                    <span className="field-type-tag">
+                      {getNetworkLabel(token.networkId)}
                     </span>
                   </div>
 

@@ -149,6 +149,17 @@ describe("Critical UI and Edge-Case Flows", () => {
         "Cannot save: Active xUDT Type Args is not a valid 32-byte hex string.",
       ),
     ).toBeTruthy();
+
+    // Restoring valid Type Args enables saving and renders the token with its network label
+    fireEvent.change(typeArgsInput, { target: { value: ISSUER_LOCK_HASH } });
+    fireEvent.change(screen.getByPlaceholderText("e.g. My Project xUDT"), {
+      target: { value: "Registry Test Token" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Save Active Token" }));
+
+    const savedTokenName = await screen.findByText("Registry Test Token");
+    const savedCard = savedTokenName.closest(".registry-item-card");
+    expect(savedCard?.textContent).toContain("CKB Testnet");
   });
 
   it("validates Mint amounts and enforces issuer lock-hash authorization", async () => {

@@ -1,27 +1,40 @@
 import { useEffect, useState } from "react";
+import { CKB_DEFAULT_NETWORK_ID } from "../config/network";
 import { REGISTRY_STORAGE_KEY } from "../config/storageKeys";
 import type { TokenRegistryItem } from "../types/token";
 import { isValidTypeArgs, normalizeHexArgs } from "../utils/hex";
 
-export function useTokenRegistry() {
+export function useTokenRegistry(
+  activeNetworkId: string = CKB_DEFAULT_NETWORK_ID,
+) {
+  const normalizedActiveNetworkId =
+    activeNetworkId.trim() || CKB_DEFAULT_NETWORK_ID;
+
   const [tokens, setTokens] = useState<TokenRegistryItem[]>(() => {
     try {
       const saved = localStorage.getItem(REGISTRY_STORAGE_KEY);
       if (!saved) return [];
-      const parsed = JSON.parse(saved) as TokenRegistryItem[];
+      const parsed = JSON.parse(saved) as Partial<TokenRegistryItem>[];
       if (!Array.isArray(parsed)) return [];
 
-      // Safely filter and normalize valid registry items
-      return parsed.filter(
-        (item) =>
-          item &&
-          typeof item.id === "string" &&
-          typeof item.name === "string" &&
-          isValidTypeArgs(item.typeArgs),
-      ).map((item) => ({
-        ...item,
-        typeArgs: normalizeHexArgs(item.typeArgs),
-      }));
+      // Safely filter, normalize, and migrate valid registry items
+      return parsed
+        .filter(
+          (item): item is TokenRegistryItem =>
+            Boolean(item) &&
+            typeof item.id === "string" &&
+            typeof item.name === "string" &&
+            typeof item.typeArgs === "string" &&
+            isValidTypeArgs(item.typeArgs),
+        )
+        .map((item) => ({
+          ...item,
+          typeArgs: normalizeHexArgs(item.typeArgs),
+          networkId:
+            typeof item.networkId === "string" && item.networkId.trim()
+              ? item.networkId.trim()
+              : CKB_DEFAULT_NETWORK_ID,
+        }));
     } catch (error) {
       console.warn("Could not restore token registry from storage:", error);
       return [];
@@ -37,25 +50,45 @@ export function useTokenRegistry() {
     }
   }, [tokens]);
 
-  const hasTokenWithTypeArgs = (typeArgs: string): boolean => {
+  const resolveNetworkId = (networkId?: string): string => {
+    return typeof networkId === "string" && networkId.trim()
+      ? networkId.trim()
+      : normalizedActiveNetworkId;
+  };
+
+  const hasTokenWithTypeArgs = (
+    typeArgs: string,
+    networkId?: string,
+  ): boolean => {
     const normalized = normalizeHexArgs(typeArgs);
     if (!isValidTypeArgs(normalized)) return false;
+    const targetNetworkId = resolveNetworkId(networkId);
     return tokens.some(
-      (t) => normalizeHexArgs(t.typeArgs) === normalized,
+      (t) =>
+        normalizeHexArgs(t.typeArgs) === normalized &&
+        t.networkId === targetNetworkId,
     );
   };
 
   const findTokenByTypeArgs = (
     typeArgs: string,
+    networkId?: string,
   ): TokenRegistryItem | undefined => {
     const normalized = normalizeHexArgs(typeArgs);
     if (!isValidTypeArgs(normalized)) return undefined;
+    const targetNetworkId = resolveNetworkId(networkId);
     return tokens.find(
-      (t) => normalizeHexArgs(t.typeArgs) === normalized,
+      (t) =>
+        normalizeHexArgs(t.typeArgs) === normalized &&
+        t.networkId === targetNetworkId,
     );
   };
 
-  const addToken = (name: string, typeArgs: string): TokenRegistryItem => {
+  const addToken = (
+    name: string,
+    typeArgs: string,
+    networkId?: string,
+  ): TokenRegistryItem => {
     const normalized = normalizeHexArgs(typeArgs);
     if (!isValidTypeArgs(normalized)) {
       throw new Error(
@@ -63,7 +96,9 @@ export function useTokenRegistry() {
       );
     }
 
-    if (hasTokenWithTypeArgs(normalized)) {
+    const targetNetworkId = resolveNetworkId(networkId);
+
+    if (hasTokenWithTypeArgs(normalized, targetNetworkId)) {
       throw new Error(
         "A token with this xUDT Type Args is already saved in the registry.",
       );
@@ -77,6 +112,7 @@ export function useTokenRegistry() {
       id: `tok_${normalized.slice(2, 10)}_${Date.now()}`,
       name: displayName,
       typeArgs: normalized,
+      networkId: targetNetworkId,
       createdAt: new Date().toISOString(),
     };
 

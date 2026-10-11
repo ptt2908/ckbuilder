@@ -15,5 +15,6 @@ export type TokenRegistryItem = {
   id: string;
   name: string;
   typeArgs: string;
+  networkId: string;
   createdAt: string;
 };

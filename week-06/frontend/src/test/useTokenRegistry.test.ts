@@ -1,5 +1,6 @@
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { CKB_DEFAULT_NETWORK_ID, getNetworkLabel } from "../config/network";
 import { REGISTRY_STORAGE_KEY } from "../config/storageKeys";
 import { useTokenRegistry } from "../hooks/useTokenRegistry";
 import type { TokenRegistryItem } from "../types/token";
@@ -35,6 +36,7 @@ describe("useTokenRegistry", () => {
         id: "tok_abcdefab_1700000000000",
         name: "Builder Token",
         typeArgs: `  ${TYPE_ARGS_UPPER}  `,
+        networkId: CKB_DEFAULT_NETWORK_ID,
         createdAt: "2026-01-01T00:00:00.000Z",
       },
     ];
@@ -47,8 +49,69 @@ describe("useTokenRegistry", () => {
       id: "tok_abcdefab_1700000000000",
       name: "Builder Token",
       typeArgs: TYPE_ARGS_UPPER_NORMALIZED,
+      networkId: CKB_DEFAULT_NETWORK_ID,
       createdAt: "2026-01-01T00:00:00.000Z",
     });
+  });
+
+  it("migrates legacy entries missing or having blank/malformed networkId and persists them", () => {
+    const legacyEntries = [
+      {
+        id: "tok_legacy_missing",
+        name: "Legacy Missing Network",
+        typeArgs: TYPE_ARGS_A,
+        createdAt: "2026-01-01T00:00:00.000Z",
+      },
+      {
+        id: "tok_legacy_blank",
+        name: "Legacy Blank Network",
+        typeArgs: TYPE_ARGS_B,
+        networkId: "   ",
+        createdAt: "2026-01-02T00:00:00.000Z",
+      },
+      {
+        id: "tok_legacy_non_string",
+        name: "Legacy Non-String Network",
+        typeArgs: TYPE_ARGS_UPPER,
+        networkId: 12345,
+        createdAt: "2026-01-03T00:00:00.000Z",
+      },
+    ];
+    localStorage.setItem(REGISTRY_STORAGE_KEY, JSON.stringify(legacyEntries));
+
+    const { result } = renderHook(() => useTokenRegistry());
+
+    expect(result.current.tokens).toEqual([
+      {
+        id: "tok_legacy_missing",
+        name: "Legacy Missing Network",
+        typeArgs: TYPE_ARGS_A,
+        networkId: CKB_DEFAULT_NETWORK_ID,
+        createdAt: "2026-01-01T00:00:00.000Z",
+      },
+      {
+        id: "tok_legacy_blank",
+        name: "Legacy Blank Network",
+        typeArgs: TYPE_ARGS_B,
+        networkId: CKB_DEFAULT_NETWORK_ID,
+        createdAt: "2026-01-02T00:00:00.000Z",
+      },
+      {
+        id: "tok_legacy_non_string",
+        name: "Legacy Non-String Network",
+        typeArgs: TYPE_ARGS_UPPER_NORMALIZED,
+        networkId: CKB_DEFAULT_NETWORK_ID,
+        createdAt: "2026-01-03T00:00:00.000Z",
+      },
+    ]);
+
+    const persisted = JSON.parse(
+      localStorage.getItem(REGISTRY_STORAGE_KEY) ?? "[]",
+    ) as TokenRegistryItem[];
+    expect(persisted).toHaveLength(3);
+    expect(persisted.every((t) => t.networkId === CKB_DEFAULT_NETWORK_ID)).toBe(
+      true,
+    );
   });
 
   it("handles malformed JSON, non-array payloads, and invalid item entries gracefully", () => {
@@ -96,12 +159,13 @@ describe("useTokenRegistry", () => {
         id: "tok_valid",
         name: "Valid Token",
         typeArgs: TYPE_ARGS_A,
+        networkId: CKB_DEFAULT_NETWORK_ID,
         createdAt: "2026-01-01T00:00:00.000Z",
       },
     ]);
   });
 
-  it("adds tokens in newest-first order, normalizes Type Args, and persists to localStorage", () => {
+  it("adds tokens in newest-first order, normalizes Type Args, records networkId, and persists to localStorage", () => {
     const { result } = renderHook(() => useTokenRegistry());
 
     let addedFirst: TokenRegistryItem | undefined;
@@ -115,6 +179,7 @@ describe("useTokenRegistry", () => {
     expect(addedFirst).toBeDefined();
     expect(addedFirst?.name).toBe("Alpha Token");
     expect(addedFirst?.typeArgs).toBe(TYPE_ARGS_UPPER_NORMALIZED);
+    expect(addedFirst?.networkId).toBe(CKB_DEFAULT_NETWORK_ID);
     expect(addedFirst?.id).toMatch(/^tok_abcdefab_\d+$/);
 
     act(() => {
@@ -130,7 +195,9 @@ describe("useTokenRegistry", () => {
     ) as TokenRegistryItem[];
     expect(persisted).toHaveLength(2);
     expect(persisted[0].typeArgs).toBe(TYPE_ARGS_B);
+    expect(persisted[0].networkId).toBe(CKB_DEFAULT_NETWORK_ID);
     expect(persisted[1].typeArgs).toBe(TYPE_ARGS_UPPER_NORMALIZED);
+    expect(persisted[1].networkId).toBe(CKB_DEFAULT_NETWORK_ID);
   });
 
   it("generates a default display name when adding a token with an empty or whitespace name", () => {
@@ -235,5 +302,53 @@ describe("useTokenRegistry", () => {
     ) as TokenRegistryItem[];
     expect(persisted).toHaveLength(1);
     expect(persisted[0].id).toBe(tokenB.id);
+  });
+
+  it("scopes duplicate detection and lookup by both normalized Type Args and networkId", () => {
+    const { result } = renderHook(() => useTokenRegistry("ckb_testnet"));
+
+    act(() => {
+      result.current.addToken("Testnet Token", TYPE_ARGS_A);
+    });
+
+    // Duplicate on the same network (ckb_testnet) is rejected
+    expect(() =>
+      result.current.addToken("Duplicate Testnet", TYPE_ARGS_A, "ckb_testnet"),
+    ).toThrow(
+      "A token with this xUDT Type Args is already saved in the registry.",
+    );
+
+    // Same Type Args on a different network (ckb_mainnet) is allowed
+    act(() => {
+      result.current.addToken("Mainnet Token", TYPE_ARGS_A, "ckb_mainnet");
+    });
+
+    expect(result.current.tokens).toHaveLength(2);
+    expect(result.current.hasTokenWithTypeArgs(TYPE_ARGS_A, "ckb_testnet")).toBe(
+      true,
+    );
+    expect(result.current.hasTokenWithTypeArgs(TYPE_ARGS_A, "ckb_mainnet")).toBe(
+      true,
+    );
+    expect(result.current.hasTokenWithTypeArgs(TYPE_ARGS_A, "ckb_devnet")).toBe(
+      false,
+    );
+
+    expect(
+      result.current.findTokenByTypeArgs(TYPE_ARGS_A, "ckb_testnet")?.name,
+    ).toBe("Testnet Token");
+    expect(
+      result.current.findTokenByTypeArgs(TYPE_ARGS_A, "ckb_mainnet")?.name,
+    ).toBe("Mainnet Token");
+    expect(
+      result.current.findTokenByTypeArgs(TYPE_ARGS_A, "ckb_devnet"),
+    ).toBeUndefined();
+  });
+
+  it("formats network labels with CKB Testnet default and safe fallback", () => {
+    expect(getNetworkLabel("ckb_testnet")).toBe("CKB Testnet");
+    expect(getNetworkLabel("   ")).toBe("CKB Testnet");
+    expect(getNetworkLabel("ckb_mainnet")).toBe("CKB Mainnet");
+    expect(getNetworkLabel("ckb_custom_devnet")).toBe("ckb_custom_devnet");
   });
 });
