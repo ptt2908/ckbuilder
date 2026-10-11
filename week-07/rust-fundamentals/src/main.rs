@@ -8,6 +8,8 @@
 //! 5. Heap-allocated `Vec<T>`, `String`, slices (`&[T]`, `&str`), and iterator pipelines.
 //! 6. Type-safe error handling with `Result<T, E>` and `Option<T>`.
 
+pub mod ownership;
+
 /// Hardware ADC sentinel indicating an open-circuit / disconnected thermistor.
 pub const SENSOR_DISCONNECTED_RAW: i16 = i16::MIN;
 
@@ -198,6 +200,17 @@ fn main() {
     let noisy_stream: [i16; 5] = [-50, SENSOR_DISCONNECTED_RAW, 250, 1400, 720];
     let valid_states = collect_valid_states(&noisy_stream);
     println!("Filtered valid state pairs: {valid_states:?}");
+
+    let (mut record, ch) = ownership::demonstrate_move_vs_copy();
+    let label_info = ownership::inspect_sensor_label(&record.label);
+    ownership::apply_calibrated_sample(&mut record, -10, mcu_temps_deci_c[0]);
+    let (_, latest_cal) = ownership::observe_then_update_record(&mut record, mcu_temps_deci_c[1]);
+    let slice_stats = ownership::summarize_reading_slice(&mcu_temps_deci_c[..3]);
+    let chosen_label = ownership::select_more_detailed_label(&record.label, "MCU-CH3");
+    println!(
+        "Ownership demo: label={chosen_label} ch={ch} valid_tag={} cal_deci_c={latest_cal} window={slice_stats:?}",
+        label_info.is_valid_ascii_tag,
+    );
 }
 
 #[cfg(test)]
