@@ -121,11 +121,19 @@ function App() {
       setXudtTxHash("");
       setXudtTransferError("");
 
-      if (!xudtTransferAmount.trim()) {
+      const trimmedAmount = xudtTransferAmount.trim();
+      if (!trimmedAmount) {
         throw new Error("Transfer amount is required.");
       }
 
-      const amount = BigInt(xudtTransferAmount);
+      if (!/^-?\d+$/.test(trimmedAmount)) {
+        throw new Error("Transfer amount must be a whole number.");
+      }
+
+      const amount = BigInt(trimmedAmount);
+      if (amount <= 0n) {
+        throw new Error("Transfer amount must be greater than 0.");
+      }
 
       const txHash = await transferXudtTokens(
         signer,
@@ -169,11 +177,19 @@ function App() {
       setXudtMintTxHash("");
       setXudtMintError("");
 
-      if (!xudtMintAmount.trim()) {
+      const trimmedAmount = xudtMintAmount.trim();
+      if (!trimmedAmount) {
         throw new Error("Mint amount is required.");
       }
 
-      const amount = BigInt(xudtMintAmount);
+      if (!/^-?\d+$/.test(trimmedAmount)) {
+        throw new Error("Mint amount must be a whole number.");
+      }
+
+      const amount = BigInt(trimmedAmount);
+      if (amount <= 0n) {
+        throw new Error("Mint amount must be greater than 0.");
+      }
 
       const txHash = await mintXudtTokens(
         signer,
