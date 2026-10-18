@@ -1,0 +1,12 @@
+node/ckb/key
+node/fiber/
+node/*.log
+release/*.exe
+release/config/
+fnn_v0.9.1-x86_64-windows.tar.gz
+install-v0.9.1.ps1
+
+runtime/ckb/key
+runtime/password.dpapi
+runtime/fiber/
+runtime/*.log
