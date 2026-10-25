@@ -8,15 +8,19 @@
 
 ## 1. Week 8 Overview
 
-Week 8 was used to research and compare three possible capstone directions before starting implementation: **DOB Studio / Decoder Explorer**, **milestone payments over Fiber**, and a **NervosDAO Companion**. Each direction was studied independently and paired with a small demo or technical spike where practical.
+Week 8 was used to research and compare three possible capstone directions before implementation: **DOB Studio / Decoder Explorer**, **milestone payments over Fiber**, and a **NervosDAO Companion**. Each direction was studied independently and paired with a small demo or technical spike where practical.
 
-The research builds on the work from Weeks 1–7. Week 3 established hands-on experience with Fiber channels and a successful 1 CKB Testnet payment. Weeks 4–6 developed CKB application skills with CCC, JoyID, xUDT, Spore, transaction tracking, and a modular React/TypeScript application. Week 7 examined Proof-to-Pay and identified the distinction between application approval, payment submission, and on-chain confirmation, as well as the limits of a direct-payment MVP that is not escrow.
+The research builds on the work from Weeks 1–7. Week 3 established hands-on experience with Fiber channels and a successful 1 CKB Testnet payment. Weeks 4–6 developed CKB application skills with CCC, JoyID, xUDT, transaction tracking, and a modular React/TypeScript application, alongside exploration of Spore. Week 7 examined Proof-to-Pay and identified the distinction between application approval, payment submission, and on-chain confirmation.
 
-After comparing the Week 8 candidates, the direction selected for discussion with Neon is:
+After reviewing the candidate directions and comparing them against the intended user-facing product, the selected capstone is:
 
-> **Proof-to-Pay: Approval-Gated Milestone Payments over Fiber**
+> **ReuseLoop — Reusable Packaging Return System**
 
-This is a proposed capstone direction, not yet an approved or implemented project. The Week 8 work remained research and small demos; no capstone application was started. An English summary message was drafted for Neon but has not been sent as of this report.
+ReuseLoop will record and verify the lifecycle of reusable packaging, including a workflow in which an item is borrowed at one point and returned at another. The core challenge is to model and validate item state transitions, authorized actions, and transaction history on CKB. The initial demonstration will use simulated return points on CKB Testnet; real-world store integration is not a requirement.
+
+The Week 8 research remains valid as technical groundwork. **DOB/Spore and Fiber are planned as potential extensions for Week 11 or Week 12**, after the core borrow-and-return workflow is working and tested. They are not prerequisites for the initial MVP. NervosDAO Companion remains a separately researched utility and is not part of the current ReuseLoop scope.
+
+No ReuseLoop application implementation was started during Week 8. Week 9 will focus on product specification, state-machine design, architecture, and a small technical feasibility test before the main implementation begins.
 
 ## 2. Week 8 Objectives
 
@@ -78,99 +82,73 @@ Research note: [`week-08/nervosdao-companion-research.md`](./week-08/nervosdao-c
 
 | Candidate | What Week 8 validated | Main open risk | Current assessment |
 |---|---|---|---|
-| DOB Studio / Decoder Explorer | Host-side DOB/0 sample test passed and returned expected traits. | RISC-V execution inside CKB VM, decoder provenance, and sandboxing. | Good Spore learning tool; not the preferred capstone direction now. |
-| Proof-to-Pay over Fiber | FNN v0.9.1 invoice lifecycle and no-route preflight are reproducible; Week 3 separately demonstrated a funded payment. | Funded channel/liquidity plan; approval workflow is application-level, not escrow. | Best match for prior Fiber work and the participant's current interest. Selected to discuss with Neon. |
-| NervosDAO Companion | Read-only Testnet headers, DAO field decoding, epoch comparison, and hypothetical estimate ran successfully. | Real wallet-cell discovery and accurate position tracking. | Useful CKB utility, but narrower fit for the chosen direction. |
+| DOB Studio / Decoder Explorer | Host-side DOB/0 sample test passed and returned expected traits. | RISC-V execution inside CKB VM, decoder provenance, and sandboxing. | Useful protocol research. DOB/Spore may be considered as a ReuseLoop extension, but it is not required for item identification in the MVP. |
+| Proof-to-Pay / Fiber | FNN v0.9.1 invoice lifecycle and no-route preflight are reproducible; Week 3 separately demonstrated a funded payment. | Funded channel/liquidity plan and correct payment-state handling. | Fiber may support a later payment or inter-location settlement extension if it adds clear value to ReuseLoop. |
+| NervosDAO Companion | Read-only Testnet headers, DAO field decoding, epoch comparison, and a hypothetical estimate ran successfully. | Real wallet-cell discovery and accurate position tracking. | Useful CKB utility, but it does not directly solve the reusable-packaging lifecycle problem and is excluded from ReuseLoop's current scope. |
+| **ReuseLoop** | Selected after comparing the capstone directions and reviewing potential overlap with existing CKB projects. | Correct Cell/state-transition design, authorization, and end-to-end verification. | **Selected capstone:** a user-facing reusable packaging borrow-and-return application, including return at a different point. |
 
-The decision refines the Week 7 Proof-to-Pay baseline. Week 7 compared direct CKB payment after approval with custom escrow work. Week 8 adds a different payment rail: **Fiber payments over CKB channels**, while retaining the Week 7 boundary that application approval, payment submission, and confirmed payment are not interchangeable. This change requires Neon’s feedback and a refreshed technical specification before implementation.
+The capstone decision prioritizes a concrete user-facing workflow rather than integrating protocols for their own sake. ReuseLoop's differentiating workflow is the traceable lifecycle of a reusable item and the ability to confirm its return at a point different from where it was borrowed.
 
-## 5. Proposed Capstone — Proof-to-Pay over Fiber
+The project will use CKB Cells, Transactions, and appropriate Scripts as the on-chain foundation, with CCC/JoyID for wallet connectivity and transaction signing where appropriate. QR codes will provide a convenient way to identify or look up an item; a QR code itself is not treated as proof that a physical return occurred.
 
-### 5.1 Problem and users
+**Extension strategy:** the core MVP comes first. The plan is to work on both DOB/Spore and Fiber during Week 11 or Week 12, provided the core workflow is stable enough to protect the final deliverable. DOB could provide a digital representation or collectible identity for an item, while Fiber could support a genuine payment/settlement flow between participants or locations. Each extension will have a bounded implementation target and its own verification criteria; if integration risks threaten the core MVP, unfinished parts will be documented as prototypes rather than presented as completed capabilities. NervosDAO Companion is not planned for integration.
 
-Small teams, freelance projects, or community grants may need a clear way to submit work evidence, approve a milestone, and pay the recipient without treating a payment-channel invoice as an escrow agreement.
+## 5. High-Level Plan for Weeks 9–12
 
-- **Payer/client:** defines the milestone, reviews evidence, and explicitly authorizes payment.
-- **Recipient/provider:** submits evidence and provides a Fiber invoice for the approved amount.
-- **Reviewer:** may be the client in the MVP; separate reviewers can be considered later.
-
-### 5.2 Proposed MVP flow
-
-1. The payer creates one milestone with an amount, recipient, and acceptance criteria.
-2. The provider submits off-chain evidence.
-3. The payer approves or rejects the evidence, with a reason for a requested revision.
-4. After approval, the provider supplies a Fiber invoice.
-5. The payer reviews the invoice's network, amount, and expiry. The app runs a Fiber `dry_run` and displays route/fee results when available.
-6. The payer explicitly confirms before the app submits `send_payment` through FNN.
-7. The app tracks the payment using Fiber's payment status and records a receipt/reference for the milestone.
-
-The UI and data model should keep two state machines separate:
-
-~~~text
-Milestone: Draft → Evidence Submitted → Approved / Changes Requested
-Payment:   Invoice Ready → Preflight → User Confirmed → Created → Inflight → Success / Failed
-~~~
-
-The app must not mark a milestone paid merely because it was approved, a transaction/payment request was submitted, or a preflight succeeded. A dry run is a point-in-time route check, not a reservation of liquidity.
-
-### 5.3 Product boundary
-
-**Included in the initial MVP:**
-
-- One payer, one provider, one CKB-denominated milestone at a time.
-- Evidence submission and explicit approval/rejection.
-- Fiber invoice inspection, preflight, payer confirmation, and status tracking.
-- Clear records showing which facts are off-chain application data and which are Fiber payment results.
-
-**Out of scope unless Neon recommends otherwise:**
-
-- Trustless escrow, automatic conditional release, arbitration, or refund enforcement.
-- Custom CKB Script for holding or releasing funds.
-- Marketplace, reputation system, multiple approver quorum, multiple assets, and multi-milestone project management.
-- Putting evidence files or private work details on-chain.
-
-A hash of an approved receipt or payment reference anchored in a CKB cell/transaction could be a stretch goal if program criteria require an application-level on-chain artifact. It should not be allowed to delay the working Fiber payment flow, and its privacy and storage cost need review.
-
-## 6. High-Level Plan for Weeks 9–12
-
-This is a planning proposal pending feedback from Neon and confirmation of capstone requirements.
+This is the proposed plan for the selected ReuseLoop capstone. The plan prioritizes the smallest verifiable end-to-end workflow first, then considers DOB/Spore and Fiber as extensions in Week 11 or Week 12.
 
 | Week | Focus | Proposed deliverables |
 |---|---|---|
-| **Week 9 — Scope and design** | Present the concept to Neon; confirm user/problem, MVP boundary, and whether Fiber is sufficient as the primary CKB integration. Choose the repository and decide the two-party data/persistence approach. Define roles, workflow states, payment state mapping, threat boundaries, and a test/demo plan. | Approved or revised capstone brief; architecture and sequence diagrams; data model/API outline; risks and acceptance criteria; isolated Fiber development environment plan. |
-| **Week 10 — Milestone workflow** | Build the one-milestone agreement, evidence submission, and review/approve/reject flow. Implement shared persistence suitable for payer and provider rather than relying on one browser's localStorage as shared state. Add validation and an audit trail for application decisions. | Usable end-to-end off-chain workflow; one payer and one provider can see the same milestone state; payment step remains gated on approval. |
-| **Week 11 — Fiber integration** | Add a backend adapter to the FNN RPC, keeping node RPC and credentials out of an untrusted browser. Parse and validate invoices; run `dry_run`; require a separate payer confirmation; submit the payment; poll/query the payment session and display `Created`, `Inflight`, `Success`, or `Failed`. Exercise errors such as expired/wrong-network invoices and no route/liquidity. | Integrated Fiber payment flow with clear preflight and status handling; funded Testnet success if an approved channel/funding setup is available, otherwise a documented blocked boundary with no false success claims. |
-| **Week 12 — Verification and presentation** | Review state transitions and authorization; test approval/rejection, wallet/node cancellation, RPC/network errors, payment failure, refresh/recovery, and duplicate-submit handling. Fix high-priority issues, prepare setup instructions and a demo script, and record limitations. Decide whether an on-chain receipt is feasible only after the core flow works. | Capstone MVP, verification results, README/architecture notes, demo evidence, final presentation, and a list of remaining risks or future work. |
+| **Week 9 — Scope and design** | Define target users, item lifecycle, roles, functional requirements, acceptance criteria, and threat boundaries. Design the state machine and decide how Cells represent item state. Set up the repository and Testnet development configuration. Run a small feasibility spike for creating, consuming, and recreating the relevant Cell/state. | Capstone brief; requirements and architecture docs; state-transition diagram; transaction/data model; risk list; test plan; initialized repository and environment. |
+| **Week 10 — Core CKB lifecycle** | Implement item identification and the borrow/return transaction flow. Model the issuing point, borrower, and receiving point. Validate authorized transitions and handle invalid or duplicate requests. Start unit/integration tests before building out the UI. | Working core transaction flow in a suitable test environment and, where feasible, CKB Testnet; tests for valid transitions, invalid permissions, and stale/duplicate state. |
+| **Week 11 — User-facing MVP and extension assessment** | Integrate React/TypeScript with CCC/JoyID. Build the item view, QR lookup, borrow action, return confirmation at a different point, current-state view, and transaction history. Test the full A-to-B flow. If the core flow is stable, begin bounded DOB/Spore and Fiber integration work in parallel, keeping each extension's scope small. | End-to-end ReuseLoop MVP; core test results; decision and proof-of-concept for optional DOB/Spore and Fiber extensions. |
+| **Week 12 — Verification, optional extensions, and demo** | Fix core issues and test error paths. Continue DOB/Spore and Fiber integration only after the core acceptance criteria are satisfied; verify each extension independently. For DOB, verify the chosen Spore/DOB flow and its relationship to item data. For Fiber, verify invoice, liquidity/preflight, explicit user confirmation, and actual payment status; keep payment status separate from item-return status. Finalize documentation and demo. | Verified MVP; test report; setup instructions; architecture and limitations; demo script/evidence; optional DOB/Fiber functionality only to the extent actually implemented and verified. |
+
+### Proposed ReuseLoop MVP workflow
+
+1. An operator creates or registers a reusable item and its identifier.
+2. The application displays the item's current state and QR-based lookup.
+3. An authorized point records the handoff to a borrower.
+4. The borrower returns the item at a receiving point that may differ from the issuing point.
+5. The receiving point confirms receipt through an authorized action.
+6. The application reads the updated state and transaction history from CKB-related data sources.
+
+The exact state machine will be finalized in Week 9. A simple initial model may use `AVAILABLE → BORROWED → AVAILABLE`, with the receiving point's signed/authorized confirmation representing the return. An `INSPECTION` state can be added only if a clear inspection rule is required. The design must not allow a borrower to unilaterally certify that the receiving point physically accepted the item.
 
 ### Proposed end-of-capstone acceptance criteria
 
-1. A payer and provider can complete one milestone workflow and see the same persisted state.
-2. Evidence can be submitted, reviewed, approved, or returned for changes.
-3. A payment action is unavailable until approval and requires explicit payer confirmation.
-4. The app validates invoice details and shows preflight results without claiming a route is guaranteed.
-5. Payment status comes from Fiber and remains distinct from milestone approval and application logs.
-6. RPC access and signing material are not exposed to arbitrary browser clients.
-7. The demo and documentation state clearly that the product is not escrow and does not force the client to pay.
+1. An item has a stable identifier and a queryable current state.
+2. The application can demonstrate borrowing at Point A and return confirmation at Point B.
+3. Only authorized actions can perform the defined state transitions.
+4. Invalid, stale, or duplicate state-transition attempts are handled and tested.
+5. The application displays transaction/state history without presenting unconfirmed submissions as successful.
+6. The frontend supports the core workflow and wallet signing as required by the chosen transaction architecture.
+7. Documentation distinguishes on-chain state and transaction evidence from off-chain display data and physical-world claims.
+8. Optional DOB/Spore or Fiber functionality is included only if its actual behavior has been implemented and verified; neither extension is required to pass the core MVP.
 
-## 7. Key Learnings
+## 6. Key Learnings
 
-1. **A payment workflow has independent application and network states.** Approval does not equal payment; submission does not equal completion.
-2. **A route check is useful but temporary.** Fiber `dry_run` can reveal no-route or fee conditions, but liquidity can change before sending.
-3. **Fiber interest is grounded in prior work.** Week 3 already exercised a funded Fiber channel, while Week 8 examined invoice lifecycle, preflight, and failure observability.
-4. **The capstone should solve a concrete workflow around Fiber.** A generic RPC wrapper may not provide enough product value; milestone evidence and review give the integration a specific user problem.
-5. **Clear boundaries prevent misleading claims.** The first version coordinates approval and payment but is not escrow, arbitration, or a trustless conditional-payment protocol.
-6. **Small demos expose integration constraints early.** The isolated no-fund route test made the liquidity dependency visible before capstone implementation.
+1. **Product workflow should drive protocol selection.** A CKB capstone should solve a concrete user problem; DOB, Fiber, and NervosDAO should be used only when they add a clear capability.
+2. **Application state and on-chain transaction state are not interchangeable.** A UI action or submitted transaction must not be treated as complete until the relevant state change is verified.
+3. **CKB's Cell model requires explicit state-transition design.** Transaction structure and scripts must enforce the intended rules; the Cell model alone does not implement the application's complete business logic.
+4. **Physical-world events need authorized confirmation.** A QR code identifies an item but does not independently prove that a reusable item was physically returned.
+5. **Fiber requires real payment-path testing.** Invoice parsing and preflight are useful but do not guarantee later payment success; a successful integration must handle channel liquidity and payment-session states.
+6. **DOB rendering and data provenance are separate concerns.** A rendered DOB does not by itself prove the truth of the physical item's lifecycle data.
+7. **Scope control improves delivery confidence.** ReuseLoop's borrow-and-return lifecycle is the MVP; DOB/Spore and Fiber are both planned extensions for Week 11/12, subject to core progress and independent verification.
 
-## 8. Challenges and Open Questions
+## 7. Challenges and Open Questions
 
-- A funded Fiber test requires a channel and directional liquidity; the Week 8 isolated node had neither.
-- A shared two-party workflow requires shared persistence and role handling; browser-only storage would not synchronize two participants.
-- FNN RPC should be accessed through a trusted application boundary, not exposed directly to arbitrary browsers.
-- The current proposal uses off-chain evidence and application-managed approval. Its audit guarantees and dispute process must be described accurately.
-- Whether to add a CKB on-chain receipt depends on Neon’s expectations and the time left after the Fiber core flow.
-- Fiber conditional-payment roadmap items should not be treated as available MVP functionality.
+- **Cell/state model:** decide which item data belongs in a Cell, which fields are immutable, and how each valid transition is authorized.
+- **Return authorization:** define which identity can confirm the return at Point B and how the app handles a return submitted by an unauthorized participant.
+- **Physical-to-digital trust boundary:** CKB can validate transaction rules, but it cannot independently observe whether a physical package changed hands. The MVP must state which participant attests to the return.
+- **State discovery and history:** choose a reliable approach to query current item state and transaction history, and document any indexer or off-chain lookup dependency.
+- **Testnet transaction lifecycle:** test pending, rejected, stale-input, and failed transactions rather than relying only on UI state.
+- **Optional DOB/Spore extension:** confirm whether it provides useful item identity or a user-facing feature beyond a QR and regular item record. The earlier DOB/0 host-side test did not establish successful RISC-V execution inside CKB VM.
+- **Optional Fiber extension:** decide the exact payment use case before integration. A funded channel/liquidity plan is needed for an actual successful payment demo; preflight alone is not proof of payment.
+- **Schedule risk:** Week 11/12 extension work must not delay the core borrow/return acceptance criteria. If time is limited, deliver the verified core MVP and document extension experiments honestly.
+- **NervosDAO Companion:** remains outside the current ReuseLoop scope because it does not directly support the core packaging lifecycle.
 
-## 9. Sources and Related Work
+## 8. Sources and Related Work
 
 ### Internal reports and research notes
 
@@ -191,5 +169,5 @@ This is a planning proposal pending feedback from Neon and confirmation of capst
 
 ---
 
-**Week 8 outcome:** Three research directions were documented and paired with small experiments. Proof-to-Pay over Fiber was selected as the preferred direction to present to Neon. The Week 9–12 plan remains provisional until feedback is received.
+**Week 8 outcome:** Three candidate directions—DOB Studio, Proof-to-Pay over Fiber, and NervosDAO Companion—were researched and paired with small experiments. The selected Week 9–12 capstone is **ReuseLoop — Reusable Packaging Return System**. Week 8 experiments remain useful technical groundwork: DOB/Spore and Fiber are planned extensions for Week 11 or Week 12, after the core borrow-and-return workflow is working and verified. NervosDAO Companion is not part of the current capstone scope. The updated plan is a working proposal and may be refined against program requirements and mentor feedback.
 
