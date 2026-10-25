@@ -36,7 +36,7 @@ receiving point confirms the return, and the item is subsequently made
 available again.
 
 The proposed on-chain design uses a Registry Cell to record registered
-item IDs and a State Cell for each item's current lifecycle state. The
+item IDs and a State Cell for each item's current lifecycle state.
 Registry and State linkage, as well as the full authorization rules,
 remain planned implementation work.
 
@@ -70,42 +70,109 @@ A Rust workspace was created for CKB scripts and integration tests. The
 State contract was successfully built for the
 `riscv64imac-unknown-none-elf` target using Clang 18.
 
-Integration tests were run using `ckb-testtool`, executing the contract
-in the CKB VM. The test suite currently contains 10 tests, and all 10
-passed in the latest run.
+Integration tests were run with `ckb-testtool`, executing the contract
+in the CKB VM. The test suite grew from 9 tests to 10 after adding a
+test for duplicate State outputs. The latest run completed with **10
+passed, 0 failed**.
 
-### Implemented State Script checks
+### 4.1 Implemented State Script Checks
 
 The current prototype checks:
 
--   State script arguments are 32 bytes long.
+-   State Script arguments are 32 bytes long.
 -   Input and output data use the expected schema version and 34-byte
     format.
 -   The item ID in the data matches the script arguments.
 -   The status value is recognized.
 -   Only the three permitted lifecycle transitions are accepted.
 -   A transaction is rejected if the State Script group contains
-    multiple input cells or multiple output cells.
+    multiple input Cells or multiple output Cells.
 
-### Test results
+### 4.2 Test Progress and Verification Checkpoints
 
-  Test area                                                   Result
-  ---------------------------------------- -------------------------
-  Valid lifecycle transitions                               3 passed
-  Invalid transitions and malformed data                    6 passed
-  Duplicate State output rejection                          1 passed
-  **Total**                                  **10 passed, 0 failed**
+  -----------------------------------------------------------------------------------
+  Checkpoint              Scope                               Result
+  ----------------------- ----------------------------------- -----------------------
+  Initial successful      Valid lifecycle transitions,        9 passed, 0 failed
+  integration run         invalid transitions, and malformed  
+                          data                                
 
-The successful tests demonstrate the current prototype's behavior for
-these specific cases. They do not establish that all security
-requirements or lifecycle invariants have been implemented.
+  Rebuild and regression  Rebuilt the State contract and      9 passed, 0 failed
+  run                     reran the existing test suite       
+                          against the refreshed binary        
+
+  Duplicate-output test   Added                               10 passed, 0 failed
+  added                   `rejects_duplicate_state_outputs`   
+                          to check that a transaction with    
+                          multiple output Cells in the same   
+                          State Script group is rejected      
+  -----------------------------------------------------------------------------------
+
+The earlier 9-test suite covered the following cases:
+
+-   `allows_available_to_borrowed`
+-   `allows_borrowed_to_returned`
+-   `allows_returned_to_available`
+-   `rejects_available_to_returned`
+-   `rejects_available_to_available`
+-   `rejects_changed_item_id`
+-   `rejects_invalid_schema_version`
+-   `rejects_invalid_data_length`
+-   `rejects_invalid_status`
+
+The 10-test suite includes all nine cases above, plus:
+
+-   `rejects_duplicate_state_outputs`
+
+### 4.3 Latest Test Results
+
+  -------------------------------------------------------------------------------------
+  Test Case                           Expected Behavior         Result
+  ----------------------------------- ------------------------- -----------------------
+  `allows_available_to_borrowed`      Accept                    PASS
+                                      `AVAILABLE -> BORROWED`   
+
+  `allows_borrowed_to_returned`       Accept                    PASS
+                                      `BORROWED -> RETURNED`    
+
+  `allows_returned_to_available`      Accept                    PASS
+                                      `RETURNED -> AVAILABLE`   
+
+  `rejects_available_to_returned`     Reject an invalid         PASS
+                                      transition                
+
+  `rejects_available_to_available`    Reject an unchanged state PASS
+
+  `rejects_changed_item_id`           Reject a mismatched item  PASS
+                                      ID                        
+
+  `rejects_invalid_schema_version`    Reject an unsupported     PASS
+                                      schema version            
+
+  `rejects_invalid_data_length`       Reject malformed data     PASS
+                                      length                    
+
+  `rejects_invalid_status`            Reject an unsupported     PASS
+                                      status value              
+
+  `rejects_duplicate_state_outputs`   Reject multiple output    PASS
+                                      Cells in the same State   
+                                      Script group              
+
+  **Total**                                                     **10 passed, 0 failed**
+  -------------------------------------------------------------------------------------
+
+These tests validate the prototype's current behavior for the listed
+transition, data-format, and State Script group-cardinality cases. They
+do not establish that all security requirements or lifecycle invariants
+have been implemented.
 
 ## 5. Current Limitations
 
 The following work remains open:
 
 -   **Authorization:** The integration tests currently use an
-    `ALWAYS_SUCCESS` lock script. Admin authorization has not yet been
+    `ALWAYS_SUCCESS` Lock Script. Admin authorization has not yet been
     implemented and verified.
 -   **Cell property preservation:** Additional checks are needed to
     ensure that transaction outputs preserve required Lock Script and
@@ -144,7 +211,8 @@ Week 10 will focus on implementing and verifying the core lifecycle:
 
 Week 9 established the initial project scope and design foundation, set
 up the CKB Rust contract workspace, and produced a working State Script
-prototype with 10 passing integration tests.
+prototype. The contract was built for the RISC-V target and the latest
+CKB VM integration test run passed all 10 tests.
 
 The next milestone is to strengthen the security and data-integrity
 guarantees, implement the Registry Script, and verify the complete
